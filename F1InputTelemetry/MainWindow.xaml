@@ -1,0 +1,80 @@
+﻿<Window x:Class="TelemetryUI.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="F1InputTelemetry" 
+        WindowStyle="None" 
+        ResizeMode="NoResize"
+        Background="Transparent"
+        AllowsTransparency="True"
+        Width="326"
+        Height="74"
+        Topmost="True">
+
+    <Viewbox>
+        <Border CornerRadius="0,36,36,0" Background="#73000000">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions> 
+
+                <!-- telemetry graph area -->
+                <Border Grid.Column="0" BorderBrush="Black" BorderThickness="1" Margin="8">
+                    <Canvas Name="TelemetryCanvas" 
+                            Background="Transparent"
+                            Width="184" 
+                            Height="56"/>
+                </Border>
+
+                <!-- pedal bar area -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+
+                    <!-- clutch -->
+                    <StackPanel Name="clutch" Margin="0 6 5 8">
+                        <TextBlock Name="ClutchPercentText" Text="0" Foreground="White" HorizontalAlignment="Center" FontSize="6"/>
+                        <Border BorderBrush="Black" BorderThickness="1">
+                            <Grid Width="12" Height="50" Background="Transparent">
+                                <Rectangle Name="ClutchFill" Fill="Blue" VerticalAlignment="Bottom"/>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- brake -->
+                    <StackPanel Margin="0 6 5 8">
+                        <TextBlock Name="BrakePercentText" Text="0" Foreground="White" HorizontalAlignment="Center" FontSize="6"/>
+                        <Border BorderBrush="Black" BorderThickness="1">
+                            <Grid Width="12" Height="50" Background="Transparent">
+                                <Rectangle Name="BrakeFill" Fill="Red" VerticalAlignment="Bottom"/>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- gas -->
+                    <StackPanel Margin="0 6 0 8">
+                        <TextBlock Name="GasPercentText" Text="0" Foreground="White" HorizontalAlignment="Center" FontSize="6"/>
+                        <Border BorderBrush="Black" BorderThickness="1">
+                            <Grid Width="12" Height="50" Background="Transparent">
+                                <Rectangle Name="GasFill" Fill="LimeGreen" VerticalAlignment="Bottom"/>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Steering Wheel Circle -->
+                <Grid Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <Canvas Width="72" Height="72">
+                        <Ellipse Width="56" Height="56" Stroke="black" StrokeThickness="8" Margin="8"/>
+                        <Ellipse x:Name="SteeringDot" Width="8" Height="8" Fill="White">
+                            <Ellipse.RenderTransform>
+                                <RotateTransform x:Name="SteeringDotRotation" CenterX="20.96" CenterY="20.96"/>
+                            </Ellipse.RenderTransform>
+                            <Canvas.Left>15.04</Canvas.Left>
+                            <Canvas.Top>15.04</Canvas.Top>
+                        </Ellipse>
+                    </Canvas>
+                </Grid>
+            </Grid>
+        </Border>
+    </Viewbox>
+</Window>
