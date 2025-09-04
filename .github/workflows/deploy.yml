@@ -1,0 +1,44 @@
+name: Deploy F1InputTelemetry
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+  packages: write
+
+env:
+  PROJECT_PATH: F1InputTelemetry/F1InputTelemetry.csproj
+
+jobs:
+  deploy:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Setup .NET 8 SDK
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore dependencies
+        run: dotnet restore ${{ env.PROJECT_PATH }}
+
+      - name: Build project
+        run: dotnet build ${{ env.PROJECT_PATH }} -c Release --no-restore
+
+      - name: Publish project
+        run: dotnet publish ${{ env.PROJECT_PATH }} -c Release --no-build
+
+      - name: Create GitHub Release and upload executable
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+          files: |
+            F1InputTelemetry/bin/Release/net8.0-windows/win-x64/publish/*.exe
