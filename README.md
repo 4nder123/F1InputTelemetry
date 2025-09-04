@@ -2,6 +2,10 @@
 
 F1InputTelemetry is a lightweight real-time overlay for the F1 games from 2018 to 2025. It captures UDP telemetry data from the game and shows your throttle, brake, clutch, and steering inputs directly on screen, similar to Racelabs Input Telemetry.
 
+<p align="center">
+  <img src="overlay.gif" />
+</p>
+
 ## Features
 
 *   **Real-time Input Display:** Instantly visualize your throttle, brake, clutch, and steering inputs.
