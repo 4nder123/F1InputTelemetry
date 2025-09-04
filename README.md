@@ -1,6 +1,6 @@
 # F1InputTelemetry
 
-F1InputTelemetry is a lightweight real-time overlay for the F1® games from 2018 to 2025. It captures UDP telemetry data from the game and shows your throttle, brake, clutch, and steering inputs directly on screen, similar to Racelabs Input Telemetry.
+F1InputTelemetry is a lightweight real-time overlay for the F1 games from 2018 to 2025. It captures UDP telemetry data from the game and shows your throttle, brake, clutch, and steering inputs directly on screen, similar to Racelabs Input Telemetry.
 
 ## Features
 
@@ -16,7 +16,9 @@ F1InputTelemetry is a lightweight real-time overlay for the F1® games from 2018
 2.  **Run:** Place the `.exe` in a folder of your choice and run it. A `settings.yaml` file will be created in the same directory.
 3.  **Play:** The overlay will now appear and display your inputs while you are in a session. You can customize the application by editing the `settings.yaml` file (close and restart the application for changes to take effect).
 
-> ⚠️ **Important:** If you change or have changed the **IP address, port, or send rate** in your game’s telemetry settings, you must also update those same values in the `settings.yaml` file to ensure the overlay works correctly.
+> ⚠️ **Important:**   
+> - The game cannot be in fullscreen mode. It must be in **windowed borderless mode** for the overlay to display correctly.
+> - If you change or have changed the **IP address, port, or send rate** in your game’s telemetry settings, you must also update those same values in the `settings.yaml` file to ensure the overlay works correctly. 
 
 ## Configuration
 
