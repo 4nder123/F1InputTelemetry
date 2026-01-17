@@ -15,8 +15,7 @@ public partial class App : Application
 
         var settings = Settings.Load();
         
-        var InputTelemetryWindow = new InputTelemetryWindow();
-        InputTelemetryWindow.SetupWindow(settings);
+        var InputTelemetryWindow = new InputTelemetryWindow(settings);
         InputTelemetryWindow.WireUp(_hub);
         InputTelemetryWindow.Show();
 

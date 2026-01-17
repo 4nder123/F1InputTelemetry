@@ -1,8 +1,6 @@
-﻿using F1InputTelemetry;
-using F1InputTelemetry.Telemetry;
+﻿using F1InputTelemetry.Telemetry;
 using F1UDP.Enums;
 using F1UDP.Structs;
-using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Shapes;
@@ -16,18 +14,40 @@ namespace F1InputTelemetry.Windows
         private byte spectatorCarIndex = 255;
         private int MaxSamples;
 
-        private readonly ObservableCollection<float> gasData = new();
-        private readonly ObservableCollection<float> brakeData = new();
+        private float[] gasData;
+        private float[] brakeData;
+        private int sampleIndex = 0;
+        private int sampleCount = 0;
 
-        public InputTelemetryWindow()
+        private readonly Path gasPath = new()
+        {
+            Stroke = Brushes.LimeGreen,
+            StrokeThickness = 2,
+            StrokeLineJoin = PenLineJoin.Round,
+        };
+
+        private readonly Path brakePath = new()
+        {
+            Stroke = Brushes.Red,
+            StrokeThickness = 2,
+            StrokeLineJoin = PenLineJoin.Round,
+        };
+
+        public InputTelemetryWindow(Settings settings)
         {
             InitializeComponent();
+            MaxSamples = SecondsOfTelemetry * settings.SendRate;
+            gasData = new float[MaxSamples];
+            brakeData = new float[MaxSamples];
+
+            TelemetryCanvas.Children.Add(gasPath);
+            TelemetryCanvas.Children.Add(brakePath);
+
+            SetupWindow(settings);
         }
 
-        public void SetupWindow(Settings settings)
+        private void SetupWindow(Settings settings)
         {
-            MaxSamples = SecondsOfTelemetry * settings.SendRate;
-
             if (settings.AutoHide) HideWindow();
             if (!settings.ShowClutch) clutch.Visibility = Visibility.Collapsed;
             Height = Math.Ceiling(Height * settings.WindowScale);
@@ -63,15 +83,13 @@ namespace F1InputTelemetry.Windows
             if (evt.EventType == EventType.SessionEnded) Dispatcher.InvokeAsync(HideWindow);
         }
 
-        public void HideWindow() => Opacity = 0;
-        public void ShowWindow() => Opacity = 1;
+        private void HideWindow() => Opacity = 0;
+        private void ShowWindow() => Opacity = 1;
         
 
-        public void Update(float gas, float brake, float clutch, float steering)
+        private void Update(float gas, float brake, float clutch, float steering)
         {
-            AddSample(gasData, gas);
-            AddSample(brakeData, brake);
-
+            AddSample(gas, brake);
             DrawTelemetry();
 
             int barHeight = 50;
@@ -91,57 +109,47 @@ namespace F1InputTelemetry.Windows
             int offset = 45;
             SteeringDotRotation.Angle = (180 * angle) + offset;
         }
-        private void AddSample(ObservableCollection<float> collection, float value)
+        private void AddSample(float gas, float brake)
         {
-            if (collection.Count >= MaxSamples)
-                collection.RemoveAt(0);
-            collection.Add(value);
+            gasData[sampleIndex] = Math.Clamp(gas, 0f, 1f);
+            brakeData[sampleIndex] = Math.Clamp(brake, 0f, 1f);
+            sampleIndex = (sampleIndex + 1) % MaxSamples;
+            if (sampleCount < MaxSamples) sampleCount++;
         }
 
         private void DrawTelemetry()
         {
-            TelemetryCanvas.Children.Clear();
             double width = TelemetryCanvas.ActualWidth;
             double height = TelemetryCanvas.ActualHeight;
             double stepX = width / MaxSamples;
 
-            DrawGraph(gasData, Colors.LimeGreen, stepX, height);
-            DrawGraph(brakeData, Colors.Red, stepX, height);
+            gasPath.Data = CreateGraphGeometry(gasData, stepX, height);
+            brakePath.Data = CreateGraphGeometry(brakeData, stepX, height);
         }
 
-        private void DrawGraph(ObservableCollection<float> data, Color color, double stepX, double height)
+        private StreamGeometry? CreateGraphGeometry(float[] data, double stepX, double height)
         {
-            if (data.Count < 2 || height == 0 || double.IsNaN(height)) return;
+            if (sampleCount < 2 || height == 0 || double.IsNaN(height))
+                return null;
 
             var geometry = new StreamGeometry();
-            using var ctx = geometry.Open();
-
-            // Clamp all values first to avoid out-of-bounds
-            List<Point> points = new();
-            for (int i = 0; i < data.Count; i++)
+            using (var ctx = geometry.Open())
             {
-                double x = i * stepX;
-                double clampedValue = Math.Clamp(data[i], 0.0f, 1.0f);
-                double y = height * (1 - clampedValue);
-                points.Add(new Point(x, y));
+                int startIndex = sampleCount < MaxSamples ? 0 : sampleIndex;                
+                for (int i = 0; i < sampleCount; i++)
+                {
+                    int index = (startIndex + i) % MaxSamples;
+                    double x = i * stepX;
+                    double y = height * (1 - data[index]);
+
+                    if (i == 0)
+                        ctx.BeginFigure(new Point(x, y), false, false);
+                    else
+                        ctx.LineTo(new Point(x, y), true, false);
+                }
             }
-
-            // Draw straight lines between points
-            ctx.BeginFigure(points[0], false, false);
-            for (int i = 1; i < points.Count; i++)
-            {
-                ctx.LineTo(points[i], true, false);
-            }
-
-            var path = new Path
-            {
-                Data = geometry,
-                Stroke = new SolidColorBrush(color),
-                StrokeThickness = 2,
-                StrokeLineJoin = PenLineJoin.Round,
-            };
-
-            TelemetryCanvas.Children.Add(path);
+            geometry.Freeze();
+            return geometry;
         }
     }
 }

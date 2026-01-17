@@ -1,5 +1,4 @@
 ﻿using F1UDP;
-using F1UDP.Enums;
 using F1UDP.Structs;
 using System.Net;
 using System.Net.Sockets;
