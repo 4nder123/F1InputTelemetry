@@ -2,13 +2,13 @@
 using YamlDotNet.Serialization;
 using System.IO;
 
-namespace TelemetryUI
+namespace F1InputTelemetry
 {
     public class Settings
     {
         private const string SettingsFile = "settings.yaml";
         [YamlMember(Description = "IP address, port and send rate of the UDP telemetry server.")]
-        public String IPAddress { get; set; } = "127.0.0.1";
+        public string IPAddress { get; set; } = "127.0.0.1";
         public int Port { get; set; } = 20777;
         public int SendRate { get; set; } = 20;
         [YamlMember(Description = "Screen coordinates of the window, measured from its center point.")]
@@ -62,7 +62,6 @@ namespace TelemetryUI
             }
             catch (Exception ex)
             {
-                // Log or handle exceptions related to file writing
                 throw new IOException("Failed to save settings.", ex);
             }
         }

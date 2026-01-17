@@ -1,31 +1,33 @@
-﻿using System.Collections.ObjectModel;
+﻿using F1InputTelemetry;
+using F1InputTelemetry.Telemetry;
+using F1UDP.Enums;
+using F1UDP.Structs;
+using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Shapes;
 
 
-namespace TelemetryUI
+namespace F1InputTelemetry.Windows
 {
-    public partial class MainWindow : Window
+    public partial class InputTelemetryWindow : Window
     {
-        private CancellationTokenSource cts = new CancellationTokenSource();
         private const int SecondsOfTelemetry = 5;
+        private byte spectatorCarIndex = 255;
         private int MaxSamples;
 
         private readonly ObservableCollection<float> gasData = new();
         private readonly ObservableCollection<float> brakeData = new();
 
-        public MainWindow()
+        public InputTelemetryWindow()
         {
             InitializeComponent();
-            Settings settings = Settings.Load();
-            MaxSamples = SecondsOfTelemetry * settings.SendRate;
-            SetupWindow(settings);
-            _ = F1UDPListener.StartListener(this, settings, cts.Token);
         }
 
         public void SetupWindow(Settings settings)
         {
+            MaxSamples = SecondsOfTelemetry * settings.SendRate;
+
             if (settings.AutoHide) HideWindow();
             if (!settings.ShowClutch) clutch.Visibility = Visibility.Collapsed;
             Height = Math.Ceiling(Height * settings.WindowScale);
@@ -33,15 +35,37 @@ namespace TelemetryUI
             Left = Math.Max(settings.WindowX - (Width / 2), 0);
             Top = Math.Max(settings.WindowY - (Height / 2), 0);
         }
+        public void WireUp(ITelemetryHub hub)
+        {
+            hub.CarTelemetryReceived += OnCarTelemetry;
+            hub.SessionReceived += OnSessionData;
+            hub.EventReceived += OnEvent;
+        }
+        private void OnCarTelemetry(PacketCarTelemetryData telemetry)
+        {
+            var playerIndex = telemetry.Header.PlayerCarIndex;
+            if (spectatorCarIndex != 255) playerIndex = spectatorCarIndex;
+            if (playerIndex == 255) return;
 
-        public void HideWindow() 
-        {
-            Opacity = 0;
+            var playerData = telemetry.Cars[playerIndex];
+            Dispatcher.InvokeAsync(() =>
+            {
+                Update(playerData.Throttle, playerData.Brake, playerData.Clutch, playerData.Steer);
+            });
         }
-        public void ShowWindow()
+        private void OnSessionData(PacketSessionData session)
         {
-            Opacity = 1;
+            spectatorCarIndex = session.SpectatorCarIndex;
         }
+        private void OnEvent(PacketEventData evt)
+        {
+            if (evt.EventType == EventType.SessionStarted) Dispatcher.InvokeAsync(ShowWindow);
+            if (evt.EventType == EventType.SessionEnded) Dispatcher.InvokeAsync(HideWindow);
+        }
+
+        public void HideWindow() => Opacity = 0;
+        public void ShowWindow() => Opacity = 1;
+        
 
         public void Update(float gas, float brake, float clutch, float steering)
         {
@@ -119,12 +143,5 @@ namespace TelemetryUI
 
             TelemetryCanvas.Children.Add(path);
         }
-
-        protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
-        {
-            cts.Cancel();
-            base.OnClosing(e);
-        }
-
     }
 }
