@@ -46,13 +46,13 @@ namespace F1UDP.Structs
 
             car.TyresSurfaceTemperature = new byte[4];
             for (int i = 0; i < 4; i++)
-                car.TyresSurfaceTemperature[i] = (PacketFormat == 2018) 
+                car.TyresSurfaceTemperature[i] = (PacketFormat <= 2019) 
                     ? (byte)Math.Min((int)reader.ReadUInt16(), 255)
                     : reader.ReadByte();
 
             car.TyresInnerTemperature = new byte[4];
             for (int i = 0; i < 4; i++)
-                car.TyresInnerTemperature[i] = (PacketFormat == 2018)
+                car.TyresInnerTemperature[i] = (PacketFormat <= 2019)
                     ? (byte)Math.Min((int)reader.ReadUInt16(), 255)
                     : reader.ReadByte(); ;
 
@@ -78,14 +78,14 @@ namespace F1UDP.Structs
         public static PacketCarTelemetryData FromBytes(byte[] bytes, PacketHeader header)
         {
             PacketCarTelemetryData packetCarTelemetryData = new PacketCarTelemetryData();
-            int TotalCars = header.PacketFormat == 2018 ? 20 : 22;
+            int TotalCars = header.PacketFormat <= 2019 ? 20 : 22;
             using (MemoryStream ms = new MemoryStream(bytes))
             using (BinaryReader reader = new BinaryReader(ms))
             {
                 packetCarTelemetryData.Header = header;
                 ms.Position = packetCarTelemetryData.Header.PacketSize;
 
-                packetCarTelemetryData.Cars = new CarTelemetryData[22];
+                packetCarTelemetryData.Cars = new CarTelemetryData[TotalCars];
                 for (int i = 0; i < TotalCars; i++)
                 {
                     packetCarTelemetryData.Cars[i] =

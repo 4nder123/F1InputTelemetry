@@ -16,6 +16,8 @@ namespace F1UDP
                 PacketType.CarTelemetry => PacketCarTelemetryData.FromBytes(data, packetHeader),
                 PacketType.Event => PacketEventData.FromBytes(data, packetHeader),
                 PacketType.Session => PacketSessionData.FromBytes(data, packetHeader),
+                PacketType.Motion => PacketMotionData.FromBytes(data, packetHeader),
+                PacketType.LapData => PacketLapData.FromBytes(data, packetHeader),
                 _ => null
             };
         }

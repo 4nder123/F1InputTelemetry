@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using F1UDP.Enums;
 using F1UDP.Interfaces;
 
 namespace F1UDP.Structs
@@ -11,9 +12,9 @@ namespace F1UDP.Structs
         public sbyte AirTemperature;
         public byte TotalLaps;
         public ushort TrackLength;    
-        public byte SessionType;                  
+        public SessionType SessionType;                  
         public sbyte TrackId;
-        public byte Formula;
+        public FormulaType Formula;
         public ushort SessionTimeLeft;
         public ushort SessionDuration;
         public byte PitSpeedLimit;
@@ -36,9 +37,9 @@ namespace F1UDP.Structs
                 packetSessionData.AirTemperature = reader.ReadSByte();
                 packetSessionData.TotalLaps = reader.ReadByte();
                 packetSessionData.TrackLength = reader.ReadUInt16();
-                packetSessionData.SessionType = reader.ReadByte();
+                packetSessionData.SessionType = SessionTypeDecoder.Decode(reader.ReadByte(), header.PacketFormat);
                 packetSessionData.TrackId = reader.ReadSByte();
-                packetSessionData.Formula = reader.ReadByte();
+                packetSessionData.Formula = (FormulaType)reader.ReadByte();
                 packetSessionData.SessionTimeLeft = reader.ReadUInt16();
                 packetSessionData.SessionDuration = reader.ReadUInt16();
                 packetSessionData.PitSpeedLimit = reader.ReadByte();
